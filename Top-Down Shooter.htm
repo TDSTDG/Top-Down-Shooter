@@ -1,0 +1,603 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top-Down Shooter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        h1 {
+            margin: 20px;
+            text-align: left;
+        }
+        h2 {
+            text-align: center;
+        }
+        .game-container {
+            position: relative;
+            width: 50%; 
+            height: 100%;
+            border: 2px solid #000;
+            background-color: #66A481;
+            overflow: hidden;
+        }
+        .player {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            width: 90px;
+            height: 90px;
+            background-image: url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c899442e-c949-43a9-928d-2441ebbec9cc/dcki0mj-893aba60-0b79-46a0-930f-524efadf0b55.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2M4OTk0NDJlLWM5NDktNDNhOS05MjhkLTI0NDFlYmJlYzljY1wvZGNraTBtai04OTNhYmE2MC0wYjc5LTQ2YTAtOTMwZi01MjRlZmFkZjBiNTUuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Wl6YL-3BBNGk63pVsknSoHmas8u1QRm3dmiQEmUNNC4');
+            background-size: cover;
+            transform: translateX(-50%);
+            transition: transform 0.3s;
+        } 
+        .player.flipped {
+            transform: translateX(-50%) scaleX(-1);
+        }
+        .bullet {
+            position: absolute;
+            width: 5px;
+            height: 10px;
+            background-color: red;
+        }
+        .enemy {
+            position: absolute;
+            width: 60px;
+            height: 100px;
+            background-image: url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/ed7e8b85-42b2-4fed-972b-c016a37f5bde/dd34am0-6e3ea26e-c987-4ea8-a169-a42065d1d473.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VkN2U4Yjg1LTQyYjItNGZlZC05NzJiLWMwMTZhMzdmNWJkZVwvZGQzNGFtMC02ZTNlYTI2ZS1jOTg3LTRlYTgtYTE2OS1hNDIwNjVkMWQ0NzMuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.5KI_tZMpSkiH84ZmkQWS-I4qs4-J_4mGXL6iIe_XBmU');
+            background-size: cover;
+        }
+       #gameOver {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        display: none;
+        line-height: 10px;
+        }
+      .game-over-message {
+        font-size: 24px;
+        margin-bottom: 25px;
+        line-height: 100px;
+        }
+
+      .try-again-button {
+       padding: 10px 20px;
+       font-size: 19px;
+       cursor: pointer;
+       }
+  .controls {
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    position: absolute;
+    left: 25px;
+    top: 25%;
+}
+   .controls button {
+    background: #282D30   ;  
+    border-top: 2px solid #38538c;
+    border-right: 2px solid #1f2d4d;
+    border-bottom: 2px solid #151e33;
+    border-left: 2px solid #1f2d4d;
+    border-radius: 8px;
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px #1e2d4d;
+    width: 150px;
+    margin-bottom: 20px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+   }
+   .up-side-button {
+    background: #38538c   ;  
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px 2px solid #2519ff;
+    width: 50px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+    position: fixed;
+    right: 10%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+    .down-side-button{
+    background: #38538c   ;  
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px 2px solid #2519ff;
+    width: 50px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+    position: fixed;
+    right: 10%;
+    top: 60%;
+    transform: translateY(-50%);
+    }
+    .right-side-button{
+    background: #38538c   ;  
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px 2px solid #2519ff;
+    width: 50px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+    position: fixed;
+    right: 5%;
+    top: 60%;
+    transform: translateY(-50%); 
+    }
+    .left-side-button{ 
+    background: #38538c   ;  
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px 2px solid #2519ff;
+    width: 50px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+    position: fixed;
+    right: 15%;
+    top: 60%;
+    transform: translateY(-50%); 
+    }
+    .R-side-button{
+    background: #38538c   ;  
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px 2px solid #2519ff;
+    width: 50px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+    position: fixed;
+    right: 2%;
+    top: 35%;
+    transform: translateY(-50%);
+    }
+    .Shoot-side-button{
+    background: #38538c   ;  
+    color: #fff;
+    font: 20px Verdana, Gill Sans, Impact, Tahoma, "helvetica neue", helvetica, arial, sans-serif;
+    line-height: 1;
+    padding: 10px 0 12px 0;
+    text-align: center;
+    text-shadow: 0px -1px 1px 2px solid #2519ff;
+    width: 50px;
+    background-clip: padding-box;
+    transition: box-shadow 0.5s ease;
+    position: fixed;
+    right: 2%;
+    top: 43%;
+    transform: translateY(-50%);
+    }
+        #theme-toggle-button {
+            display: inline-block;
+            width: 70px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            align-items: flex-start;
+            flex-direction: column;
+            position: absolute;
+            left: 30px;
+            top: 15%;
+        }
+        #toggle {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        #container, #patches, #stars, #button, #sun, #moon, #cloud {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 0.25s;
+        }
+        #toggle:checked + svg #container {
+            fill: #2b4360;
+        }
+        #toggle:checked + svg #button {
+            transform: translate(28px, 2.333px);
+        }
+        #sun {
+            opacity: 1;
+        }
+        #toggle:checked + svg #sun {
+            opacity: 0;
+        }
+        #moon {
+            opacity: 0;
+        }
+        #toggle:checked + svg #moon {
+            opacity: 1;
+        }
+        #cloud {
+            opacity: 1;
+        }
+        #toggle:checked + svg #cloud {
+            opacity: 0;
+        }
+        #stars {
+            opacity: 0;
+        }
+        #toggle:checked + svg #stars {
+            opacity: 1;
+        }
+        .dark-mode {
+            background-color: black;
+            color: white;
+        }
+        .controls button:hover {
+    box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+    cursor: pointer;
+}
+        .controls button:active {
+    box-shadow: inset 0 1px 10px 1px #5c8bee, 0 1px 0 #1d2c4d, 0 2px 0 #1f3053, 0 4px 3px 0 #111111;
+    transform: translateY(4px);
+}
+.controls button:hover {
+    box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+    cursor: pointer;
+}
+.dark-mode .controls button:hover {
+    box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #ffffff; 
+    cursor: pointer;
+}
+.dark-mode .controls button {
+    background: #ffffff; 
+    color: #000000; 
+    border-color: #000000; 
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.7); 
+}
+.player.flipped {
+    transform: scaleX(-1);
+}
+@media (max-width: 768px) {
+    .your-button-class {
+        width: 50px; 
+        height: 50px; 
+        font-size: 16px; 
+    }
+    .your-image-class {
+        width: 100%; 
+        height: auto; 
+    }
+}
+@media (max-width: 480px) {
+    .your-button-class {
+        width: 40px; 
+        height: 40px; 
+        font-size: 14px; 
+    }
+    .your-image-class {
+        width: 100%; 
+        height: auto; 
+    }
+}
+.your-button-class {
+    font-size: 1.5rem; 
+    padding: 1em;
+}
+.your-image-class {
+    max-width: 100vw; 
+    max-height: 100vh; 
+}
+    </style>
+</head>
+<body>
+    <h1>Top-Down Shooter</h1>
+    <div class="game-container" id="gameContainer">
+        <div class="player" id="player"></div>
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <div class="controls">
+                <button id="tryAgainButton">Try Again</button>
+            </div>
+        </div>
+    </div>
+    <div class="controls">
+        <button id="startButton">Start</button>
+        <button id="pauseButton">Pause</button>
+        <button id="score">Score: 0</button>
+        <a href="Top-Down Shooter Informations.htm"><button>Learn More About | Controls</button></a>
+    </div>
+    <button class="up-side-button" id="↑">↑</button>
+    <button class="down-side-button" id="↓">↓</button>
+    <button class="right-side-button" id="→">→</button>
+    <button class="left-side-button" id="←">←</button>
+    <button class="R-side-button" id="R">R</button>
+    <button class="Shoot-side-button" id="🔫">🔫</button>
+ <label id="theme-toggle-button">
+  <input type="checkbox" id="toggle">
+  <svg viewBox="0 0 69.667 44" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(3.5 3.5)" data-name="Component 15 – 1" id="Component_15_1">
+      <g filter="url(#container)" transform="matrix(1, 0, 0, 1, -3.5, -3.5)">
+        <rect fill="#83cbd8" transform="translate(3.5 3.5)" rx="17.5" height="35" width="60.667" data-name="container" id="container"></rect>
+      </g>
+      <g transform="translate(2.333 2.333)" id="button">
+        <g data-name="sun" id="sun">
+          <g filter="url(#sun-outer)" transform="matrix(1, 0, 0, 1, -5.83, -5.83)">
+            <circle fill="#f8e664" transform="translate(5.83 5.83)" r="15.167" cy="15.167" cx="15.167" data-name="sun-outer" id="sun-outer-2"></circle>
+          </g>
+          <g filter="url(#sun)" transform="matrix(1, 0, 0, 1, -5.83, -5.83)">
+            <path fill="rgba(246,254,247,0.29)" transform="translate(9.33 9.33)" d="M11.667,0A11.667,11.667,0,1,1,0,11.667,11.667,11.667,0,0,1,11.667,0Z" data-name="sun" id="sun-3"></path>
+          </g>
+          <circle fill="#fcf4b9" transform="translate(8.167 8.167)" r="7" cy="7" cx="7" id="sun-inner"></circle>
+        </g>
+        <g data-name="moon" id="moon">
+          <g filter="url(#moon)" transform="matrix(1, 0, 0, 1, -31.5, -5.83)">
+            <circle fill="#cce6ee" transform="translate(31.5 5.83)" r="15.167" cy="15.167" cx="15.167" data-name="moon" id="moon-3"></circle>
+          </g>
+          <g fill="#a6cad0" transform="translate(-24.415 -1.009)" id="patches">
+            <circle transform="translate(43.009 4.496)" r="2" cy="2" cx="2"></circle>
+            <circle transform="translate(39.366 17.952)" r="2" cy="2" cx="2" data-name="patch"></circle>
+            <circle transform="translate(33.016 8.044)" r="1" cy="1" cx="1" data-name="patch"></circle>
+            <circle transform="translate(51.081 18.888)" r="1" cy="1" cx="1" data-name="patch"></circle>
+            <circle transform="translate(33.016 22.503)" r="1" cy="1" cx="1" data-name="patch"></circle>
+            <circle transform="translate(50.081 10.53)" r="1.5" cy="1.5" cx="1.5" data-name="patch"></circle>
+          </g>
+        </g>
+      </g>
+      <g filter="url(#cloud)" transform="matrix(1, 0, 0, 1, -3.5, -3.5)">
+        <path fill="#fff" transform="translate(-3466.47 -160.94)" d="M3512.81,173.815a4.463,4.463,0,0,1,2.243.62.95.95,0,0,1,.72-1.281,4.852,4.852,0,0,1,2.623.519c.034.02-.5-1.968.281-2.716a2.117,2.117,0,0,1,2.829-.274,1.821,1.821,0,0,1,.854,1.858c.063.037,2.594-.049,3.285,1.273s-.865,2.544-.807,2.626a12.192,12.192,0,0,1,2.278.892c.553.448,1.106,1.992-1.62,2.927a7.742,7.742,0,0,1-3.762-.3c-1.28-.49-1.181-2.65-1.137-2.624s-1.417,2.2-2.623,2.2a4.172,4.172,0,0,1-2.394-1.206,3.825,3.825,0,0,1-2.771.774c-3.429-.46-2.333-3.267-2.2-3.55A3.721,3.721,0,0,1,3512.81,173.815Z" data-name="cloud" id="cloud"></path>
+      </g>
+      <g fill="#def8ff" transform="translate(3.585 1.325)" id="stars">
+        <path transform="matrix(-1, 0.017, -0.017, -1, 24.231, 3.055)" d="M.774,0,.566.559,0,.539.458.933.25,1.492l.485-.361.458.394L1.024.953,1.509.592.943.572Z"></path>
+        <path transform="matrix(-0.777, 0.629, -0.629, -0.777, 23.185, 12.358)" d="M1.341.529.836.472.736,0,.505.46,0,.4.4.729l-.231.46L.605.932l.4.326L.9.786Z" data-name="star"></path>
+        <path transform="matrix(0.438, 0.899, -0.899, 0.438, 23.177, 29.735)" d="M.015,1.065.475.9l.285.365L.766.772l.46-.164L.745.494.751,0,.481.407,0,.293.285.658Z" data-name="star"></path>
+        <path transform="translate(12.677 0.388) rotate(104)" d="M1.161,1.6,1.059,1,1.574.722.962.607.86,0,.613.572,0,.457.446.881.2,1.454l.516-.274Z" data-name="star"></path>
+        <path transform="matrix(-0.07, 0.998, -0.998, -0.07, 11.066, 15.457)" d="M.873,1.648l.114-.62L1.579.945,1.03.62,1.144,0,.706.464.157.139.438.7,0,1.167l.592-.083Z" data-name="star"></path>
+        <path transform="translate(8.326 28.061) rotate(11)" d="M.593,0,.638.724,0,.982l.7.211.045.724.36-.64.7.211L1.342.935,1.7.294,1.063.552Z" data-name="star"></path>
+        <path transform="translate(5.012 5.962) rotate(172)" d="M.816,0,.5.455,0,.311.323.767l-.312.455.516-.215.323.456L.827.911,1.343.7.839.552Z" data-name="star"></path>
+        <path transform="translate(2.218 14.616) rotate(169)" d="M1.261,0,.774.571.114.3.487.967,0,1.538.728,1.32l.372.662.047-.749.728-.218L1.215.749Z" data-name="star"></path>
+      </g>
+    </g>
+  </svg>
+</label>
+    </div>
+    <audio id="gunshotSound" src="gunshot.mp3"></audio>
+    <audio id="enemySpawnSound" src="zombie.mp3" preload="auto"></audio>
+    <script>
+ document.getElementById('enemySpawnSound').play();
+document.addEventListener("DOMContentLoaded", function() {
+    const themeToggle = document.getElementById("toggle");
+    const body = document.body;
+
+    themeToggle.addEventListener("change", function() {
+        if (themeToggle.checked) {
+            body.classList.add("dark-mode");
+        } else {
+            body.classList.remove("dark-mode");
+        }
+    });
+
+    const gameContainer = document.getElementById('gameContainer');
+    const player = document.getElementById('player');
+    const scoreElement = document.getElementById('score');
+    const gameOverElement = document.getElementById('gameOver');
+    const tryAgainButton = document.getElementById('tryAgainButton');
+    const gunshotSound = document.getElementById('gunshotSound');
+    const enemySpawnSound = document.getElementById('enemySpawnSound');
+
+    let bullets = [];
+    let enemies = [];
+    let gameRunning = false;
+    let gamePaused = false;
+    let animationFrameId;
+    let enemyIntervalId;
+    let score = parseInt(localStorage.getItem('score')) || 0;
+    let playerDirection = 1;
+
+    function movePlayer(direction) {
+        const step = 30;
+        const rect = gameContainer.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+        const playerLeft = playerRect.left - rect.left;
+        const playerRight = playerRect.right - rect.left;
+        const playerBottom = rect.bottom - playerRect.bottom;
+
+        if (direction === 'left' && playerLeft > 0) {
+            player.style.left = player.offsetLeft - step + 'px';
+        }
+        if (direction === 'right' && playerRight < rect.width) {
+            player.style.left = player.offsetLeft + step + 'px';
+        }
+        if (direction === 'up') {
+            const bottomLimit = 20;
+            if (playerBottom <= bottomLimit) {
+                player.style.bottom = parseInt(player.style.bottom) + step + 'px';
+            }
+        }
+        if (direction === 'down') {
+            player.style.bottom = '10px';
+        }
+    }
+
+    function handleKeyboardInput(event) {
+        const key = event.key.toLowerCase();
+        if (key === 'a' || key === 'arrowleft') {
+            movePlayer('left');
+        }
+        if (key === 'd' || key === 'arrowright') {
+            movePlayer('right');
+        }
+        if (key === 'w' || key === 'arrowup') {
+            movePlayer('up');
+        }
+        if (key === 's' || key === 'arrowdown') {
+            movePlayer('down');
+        }
+        if (key === 'r') {
+            player.classList.toggle('flipped');
+            playerDirection = player.classList.contains('flipped') ? -1 : 1;
+        }
+    }
+
+    function shoot() {
+        const gameContainerRect = gameContainer.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+        const bullet = document.createElement('div');
+        bullet.className = 'bullet';
+        bullet.style.left = (playerRect.left - gameContainerRect.left) + (player.offsetWidth / 2 - 2.5) + 'px';
+        bullet.style.bottom = (gameContainerRect.bottom - playerRect.top) + 'px';
+        bullet.direction = playerDirection;
+        gameContainer.appendChild(bullet);
+        bullets.push(bullet);
+        gunshotSound.currentTime = 0;
+        gunshotSound.play();
+    }
+
+    function createEnemy() {
+        if (gameRunning && !gamePaused) {
+            const enemy = document.createElement('div');
+            enemy.className = 'enemy';
+            enemy.style.left = Math.random() * (gameContainer.clientWidth - 50) + 'px';
+            enemy.style.top = '0px';
+            gameContainer.appendChild(enemy);
+            enemies.push(enemy);
+            enemySpawnSound.play();
+        }
+    }
+
+    function moveBullets() {
+        bullets.forEach((bullet, index) => {
+            bullet.style.bottom = parseInt(bullet.style.bottom) + 5 + 'px';
+            if (parseInt(bullet.style.bottom) > gameContainer.clientHeight || parseInt(bullet.style.bottom) < 0) {
+                bullet.remove();
+                bullets.splice(index, 1);
+            }
+        });
+    }
+
+    function moveEnemies() {
+        enemies.forEach((enemy, index) => {
+            enemy.style.top = parseInt(enemy.style.top) + 2 + 'px';
+            if (parseInt(enemy.style.top) > gameContainer.clientHeight) {
+                endGame();
+                return;
+            }
+            const enemyRect = enemy.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
+            if (isColliding(enemyRect, playerRect)) {
+                endGame();
+                return;
+            }
+        });
+    }
+
+    function isColliding(rect1, rect2) {
+        return !(
+            rect1.right < rect2.left ||
+            rect1.left > rect2.right ||
+            rect1.bottom < rect2.top ||
+            rect1.top > rect2.bottom
+        );
+    }
+
+    function checkCollisions() {
+        bullets.forEach((bullet, bulletIndex) => {
+            enemies.forEach((enemy, enemyIndex) => {
+                const bulletRect = bullet.getBoundingClientRect();
+                const enemyRect = enemy.getBoundingClientRect();
+                if (
+                    bulletRect.left < enemyRect.left + enemyRect.width &&
+                    bulletRect.left + bulletRect.width > enemyRect.left &&
+                    bulletRect.top < enemyRect.top + enemyRect.height &&
+                    bulletRect.height + bulletRect.top > enemyRect.top
+                ) {
+                    bullet.remove();
+                    enemy.remove();
+                    bullets.splice(bulletIndex, 1);
+                    enemies.splice(enemyIndex, 1);
+                    score++;
+                    scoreElement.textContent = `Score: ${score}`;
+                    localStorage.setItem('score', score);
+                }
+            });
+        });
+    }
+
+    function gameLoop() {
+        if (!gamePaused) {
+            moveBullets();
+            moveEnemies();
+            checkCollisions();
+        }
+        if (gameRunning) {
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    function startGame() {
+        if (!gameRunning) {
+            gameRunning = true;
+            gamePaused = false;
+            gameOverElement.style.display = 'none';
+            animationFrameId = requestAnimationFrame(gameLoop);
+            enemyIntervalId = setInterval(createEnemy, 2000);
+        }
+    }
+
+    function endGame() {
+        gameRunning = false;
+        clearInterval(enemyIntervalId);
+        cancelAnimationFrame(animationFrameId);
+        gameOverElement.style.display = 'block';
+    }
+
+    document.addEventListener('keydown', handleKeyboardInput);
+    document.querySelector('.left-side-button').addEventListener('click', () => movePlayer('left'));
+    document.querySelector('.right-side-button').addEventListener('click', () => movePlayer('right'));
+    document.querySelector('.up-side-button').addEventListener('click', () => movePlayer('up'));
+    document.querySelector('.down-side-button').addEventListener('click', () => movePlayer('down'));
+    document.querySelector('.R-side-button').addEventListener('click', () => {
+        player.classList.toggle('flipped');
+        playerDirection = player.classList.contains('flipped') ? -1 : 1;
+    });
+    document.querySelector('.Shoot-side-button').addEventListener('click', shoot);
+    document.addEventListener('mousedown', shoot);
+    document.getElementById('startButton').addEventListener('click', startGame);
+    document.getElementById('pauseButton').addEventListener('click', function() {
+        gamePaused = !gamePaused;
+        if (!gamePaused) {
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+    });
+    tryAgainButton.addEventListener('click', function() {
+        location.reload();
+    });
+});
+    </script>
+</body>
+</html>
